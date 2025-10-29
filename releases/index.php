@@ -1,0 +1,216 @@
+<?php
+require("../db.php");
+
+function validateID() {
+    global $conn;
+
+    if (empty($_GET["id"])) {
+		http_response_code(400);
+		exit;
+	}
+
+	$id = $_GET["id"];
+
+	if (!is_numeric($id)) {
+		header("Content-Type: application/json; charset=utf-8");
+		http_response_code(400);
+		echo json_encode(["message" => "ID is malformed"]);
+		exit;
+	}
+
+	$id = intval($id, 10);
+
+	$stmt = $conn->prepare("SELECT * FROM releases WHERE id = :id");
+	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
+	$stmt->execute();
+	$result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+	if (!is_array($result)) {
+		http_response_code(404);
+		exit;
+	}
+
+	return $id;
+}
+
+
+# GET ALL RELEASES
+if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"])) {
+    $stmt = $conn->prepare("SELECT * FROM releases");
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    for ($i = 0; $i < count($results); $i++) {
+        $results[$i]["url"] = "http://localhost:8888/php-music/releases?id=" . $results[$i]["id"];
+        unset($results[$i]["id"]);
+        unset($results[$i]["release_year"]);
+        unset($results[$i]["release_type"]);
+        unset($results[$i]["artwork_url"]);
+    }
+
+    header("Content-Type: applicaition/json; charset=utf-8");
+    $output = ["results" => $results];
+    echo json_encode($output);
+}
+
+
+# GET RELEASE FROM ID
+if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
+    $id = validateID();
+
+    $stmt = $conn->prepare(
+        "SELECT releases.id, releases.title, releases.release_year, releases.release_type, releases.artwork_url,
+        artists.id AS artist_id, artists.name AS artist_name
+        FROM releases
+        LEFT JOIN release_artists ON release_artists.release_id = :id
+        LEFT JOIN artists ON artists.id = release_artists.artist_id
+        WHERE releases.id = :id"
+    );
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $output = [
+        "id" => $results[0]["id"],
+        "title" => $results[0]["title"],
+        "release_year" => $results[0]["release_year"],
+        "release_type" => $results[0]["release_type"],
+        "artwork_url" => $results[0]["artwork_url"],
+        "artists" => [],
+    ];
+
+    for ($i = 0; $i < count($results); $i++) {
+		$output["artists"][] = ["name" => $results[$i]["artist_name"], "url" => "http://localhost:8888/php-music/artists?id=" . $results[$i]["artist_id"]];
+	}
+
+    header("Content-Type: applicaition/json; charset=utf-8");
+    echo json_encode($output);
+}
+// if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
+//     $id = validateID();
+
+//     $stmt = $conn->prepare("SELECT * FROM releases WHERE id = :id");
+//     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+//     $stmt->execute();
+
+//     $results = $stmt->fetch(PDO::FETCH_ASSOC);
+
+//     header("Content-Type: applicaition/json; charset=utf-8");
+//     echo json_encode($results);
+// }
+
+
+# CREATE NEW RELEASE
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    if (empty($_POST["title"])) {
+        http_response_code(403);
+        echo json_encode("title not included");
+        exit;
+    }
+    if (empty($_POST["release_year"])) {
+        http_response_code(403);
+        echo json_encode("title not included");
+        exit;
+    }
+    if (empty($_POST["release_type"])) {
+        http_response_code(403);
+        echo json_encode("title not included");
+        exit;
+    }
+    if (empty($_POST["artwork_url"])) {
+        http_response_code(403);
+        echo json_encode("title not included");
+        exit;
+    }
+
+    $title = $_POST["title"];
+    $release_year = $_POST["release_year"];
+    $release_type = $_POST["release_type"];
+    $artwork_url = $_POST["artwork_url"];
+
+    $stmt = $conn->prepare("INSERT INTO releases (`title`, `release_year`, `release_type`, `artwork_url`)
+                            VALUES (:title, :release_year, :release_type, :artwork_url)");
+
+    $stmt->bindParam(":title", $title);
+    $stmt->bindParam(":release_year", $release_year);
+    $stmt->bindParam(":release_type", $release_type);
+    $stmt->bindParam(":artwork_url", $artwork_url);
+
+    $stmt->execute();
+    http_response_code(201);
+}
+
+
+# EDIT EXISTING RELEASE
+if ($_SERVER["REQUEST_METHOD"] === "PUT") {
+    $id = validateID();
+
+    parse_str(file_get_contents("php://input"), $body);
+
+    if (empty($body["title"])) {
+        http_response_code(403);
+        echo json_encode("title not included");
+        exit;
+    }
+    if (empty($body["release_year"])) {
+        http_response_code(403);
+        echo json_encode("release_year not included");
+        exit;
+    }
+    if (empty($body["release_type"])) {
+        http_response_code(403);
+        echo json_encode("release_type not included");
+        exit;
+    }
+    if (empty($body["artwork_url"])) {
+        http_response_code(403);
+        echo json_encode("artwork_url not included");
+        exit;
+    }
+
+    $stmt = $conn->prepare("UPDATE releases 
+                            SET title = :title, release_year = :release_year, release_type = :release_type, artwork_url = :artwork_url
+                            WHERE id = :id");
+
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->bindParam(":title", $body["title"]);
+    $stmt->bindParam(":release_year", $body["release_year"]);
+    $stmt->bindParam(":release_type", $body["release_type"]);
+    $stmt->bindParam(":artwork_url", $body["artwork_url"]);
+
+    $stmt->execute();
+
+    $stmt = $conn->prepare("SELECT * FROM releases WHERE id = :id");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    header("Content-Type: applicaition/json; charset=utf-8");
+    http_response_code(200);
+    echo json_encode($stmt->fetch(PDO::FETCH_ASSOC));
+}
+
+
+# DELETE RELEASE
+if ($_SERVER["REQUEST_METHOD"] === "DELETE") {
+    if (empty($_GET["id"])) {
+        http_response_code(400);
+        exit;
+    }
+    $id = $_GET["id"];
+
+    $stmt = $conn->prepare("DELETE FROM releases WHERE id = :id");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+
+    $stmt->execute();
+    http_response_code(204);
+}
+
+// "SELECT releases.id, releases.title, releases.release_year, releases.release_type, releases.artwork_url,
+//         songs.id AS song_id, songs.title AS song_title, songs.track_number,
+//         artists.id AS artist_id, artists.name AS artist_name
+//         FROM releases
+//         LEFT JOIN songs ON songs.release_id = :id
+//         LEFT JOIN release_artists ON release_artists.release_id = :id
+//         LEFT JOIN artists ON artists.id = release_artists.artist_id
+//         WHERE releases.id = :id"
