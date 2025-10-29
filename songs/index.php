@@ -1,15 +1,15 @@
 <?php
 require("../db.php");
 
-function validateID() {
+function validateParam($param) {
     global $conn;
 
-    if (empty($_GET["id"])) {
+    if (empty($param)) {
 		http_response_code(400);
 		exit;
 	}
 
-	$id = $_GET["id"];
+	$id = $param;
 
 	if (!is_numeric($id)) {
 		header("Content-Type: application/json; charset=utf-8");
@@ -35,7 +35,7 @@ function validateID() {
 
 
 # GET ALL SONGS
-if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"])) {
+if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"]) && empty($_GET["release"]) && empty($_GET["genre"])) {
     $stmt = $conn->prepare("SELECT * FROM songs");
     $stmt->execute();
 
@@ -55,7 +55,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"])) {
 
 # GET SONG FROM ID
 if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
-    $id = validateID();
+    $id = validateParam($_GET["id"]);
 
     $stmt = $conn->prepare(
         "SELECT songs.id, songs.title, songs.track_number, songs.release_id,
@@ -74,7 +74,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
         "id" => $results[0]["id"],
         "title" => $results[0]["title"],
         "track_number" => $results[0]["track_number"],
-        "release_id" => $results[0]["release_id"],
+        "release_url" => "http://localhost:8888/php-music/releases?id=" . $results[0]["release_id"],
         "artists" => [],
     ];
 
@@ -85,18 +85,72 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
     header("Content-Type: applicaition/json; charset=utf-8");
     echo json_encode($output);
 }
-// if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
-//     $id = validateID();
 
-//     $stmt = $conn->prepare("SELECT * FROM songs WHERE id = :id");
-//     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-//     $stmt->execute();
 
-//     $results = $stmt->fetch(PDO::FETCH_ASSOC);
+# GET SONGS FROM RELEASE
+if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["release"])) {
+    $release = validateParam($_GET["release"]);
 
-//     header("Content-Type: applicaition/json; charset=utf-8");
-//     echo json_encode($results);
-// }
+    $stmt = $conn->prepare(
+        "SELECT songs.id, songs.title, songs.track_number, releases.title AS release_title
+        FROM songs
+        LEFT JOIN releases ON releases.id = songs.release_id
+        WHERE songs.release_id = :release
+        ORDER BY songs.track_number ASC"
+    );
+    $stmt->bindParam(":release", $release, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $output = [
+        "release" => $results[0]["release_title"],
+        "release_url" => "http://localhost:8888/php-music/releases?id=" . $release,
+        "results" => [],
+    ];
+
+    for ($i = 0; $i < count($results); $i++) {
+        $output["results"][] = ["title" => $results[$i]["title"], "url" => "http://localhost:8888/php-music/songs?id=" . $results[$i]["id"]];
+        unset($results[$i]["id"]);
+        unset($results[$i]["name"]);
+    }
+
+    header("Content-Type: applicaition/json; charset=utf-8");
+    echo json_encode($output);
+}
+
+
+# GET SONGS FROM GENRE
+if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["genre"])) {
+    $genre = validateParam($_GET["genre"]);
+
+    $stmt = $conn->prepare(
+        "SELECT songs.id, songs.title, genres.name
+        FROM song_genres
+        LEFT JOIN genres ON genres.id = :genre
+        LEFT JOIN songs ON songs.id = song_genres.song_id
+        WHERE song_genres.genre_id = :genre"
+    );
+    $stmt->bindParam(":genre", $genre, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $output = [
+        "genre" => $results[0]["name"],
+        "genre_url" => "http://localhost:8888/php-music/genres?id=" . $genre,
+        "results" => [],
+    ];
+
+    for ($i = 0; $i < count($results); $i++) {
+        $output["results"][] = ["title" => $results[$i]["title"], "url" => "http://localhost:8888/php-music/artists?id=" . $results[$i]["id"]];
+        unset($results[$i]["id"]);
+        unset($results[$i]["name"]);
+    }
+
+    header("Content-Type: applicaition/json; charset=utf-8");
+    echo json_encode($output);
+}
 
 
 # CREATE NEW SONG
@@ -135,7 +189,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 # EDIT EXISTING SONG
 if ($_SERVER["REQUEST_METHOD"] === "PUT") {
-    $id = validateID();
+    $id = validateParam($_GET["id"]);
 
     parse_str(file_get_contents("php://input"), $body);
 

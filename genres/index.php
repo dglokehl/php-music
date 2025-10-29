@@ -1,15 +1,15 @@
 <?php
 require("../db.php");
 
-function validateID() {
+function validateParam($param) {
     global $conn;
 
-    if (empty($_GET["id"])) {
+    if (empty($param)) {
 		http_response_code(400);
 		exit;
 	}
 
-	$id = $_GET["id"];
+	$id = $param;
 
 	if (!is_numeric($id)) {
 		header("Content-Type: application/json; charset=utf-8");
@@ -20,7 +20,7 @@ function validateID() {
 
 	$id = intval($id, 10);
 
-	$stmt = $conn->prepare("SELECT * FROM genres WHERE id = :id");
+	$stmt = $conn->prepare("SELECT * FROM songs WHERE id = :id");
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
 	$stmt->execute();
 	$result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -35,7 +35,7 @@ function validateID() {
 
 
 # GET ALL GENRES
-if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"])) {
+if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"]) && empty($_GET["song"])) {
     $stmt = $conn->prepare("SELECT * FROM genres");
     $stmt->execute();
 
@@ -53,16 +53,55 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"])) {
 
 # GET GENRE FROM ID
 if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
-    $id = validateID();
+    $id = validateParam($_GET["id"]);
 
     $stmt = $conn->prepare("SELECT * FROM genres WHERE id = :id");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
-    $results = $stmt->fetch(PDO::FETCH_ASSOC);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $output = [
+        "id" => $results[0]["id"],
+        "name" => $results[0]["name"],
+        "songs_url" => "http://localhost:8888/php-music/songs?genre=" . $id,
+    ];
 
     header("Content-Type: applicaition/json; charset=utf-8");
-    echo json_encode($results);
+    echo json_encode($output);
+}
+
+
+# GET GENRES FROM SONG
+if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["song"])) {
+    $song = validateParam($_GET["song"]);
+
+    $stmt = $conn->prepare(
+        "SELECT genres.id, genres.name, songs.title
+        FROM song_genres
+        LEFT JOIN genres ON genres.id = song_genres.genre_id
+        LEFT JOIN songs ON songs.id = song_genres.song_id
+        WHERE song_genres.song_id = :song"
+    );
+    $stmt->bindParam(":song", $song, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $output = [
+        "song" => $results[0]["title"],
+        "song_url" => "http://localhost:8888/php-music/songs?id=" . $song,
+        "results" => [],
+    ];
+
+    for ($i = 0; $i < count($results); $i++) {
+        $output["results"][] = ["name" => $results[$i]["name"], "url" => "http://localhost:8888/php-music/genres?id=" . $results[$i]["id"]];
+        unset($results[$i]["id"]);
+        unset($results[$i]["name"]);
+    }
+
+    header("Content-Type: applicaition/json; charset=utf-8");
+    echo json_encode($output);
 }
 
 
@@ -88,7 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 # EDIT EXISTING GENRE
 if ($_SERVER["REQUEST_METHOD"] === "PUT") {
-    $id = validateID();
+    $id = validateParam($_GET["id"]);
 
     parse_str(file_get_contents("php://input"), $body);
 

@@ -1,15 +1,15 @@
 <?php
 require("../db.php");
 
-function validateID() {
+function validateParam($param) {
     global $conn;
 
-    if (empty($_GET["id"])) {
+    if (empty($param)) {
 		http_response_code(400);
 		exit;
 	}
 
-	$id = $_GET["id"];
+	$id = $param;
 
 	if (!is_numeric($id)) {
 		header("Content-Type: application/json; charset=utf-8");
@@ -20,7 +20,7 @@ function validateID() {
 
 	$id = intval($id, 10);
 
-	$stmt = $conn->prepare("SELECT * FROM artists WHERE id = :id");
+	$stmt = $conn->prepare("SELECT * FROM songs WHERE id = :id");
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
 	$stmt->execute();
 	$result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -53,7 +53,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"])) {
 
 # GET ARTIST FROM ID
 if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
-    $id = validateID();
+    $id = validateParam($_GET["id"]);
 
     $stmt = $conn->prepare(
         "SELECT artists.id, artists.name,
@@ -71,28 +71,12 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
     $output = [
         "id" => $results[0]["id"],
         "name" => $results[0]["name"],
-        "discography" => [],
+        "discography_url" => "http://localhost:8888/php-music/releases?artist=" . $id,
     ];
-
-    for ($i = 0; $i < count($results); $i++) {
-		$output["discography"][] = ["title" => $results[$i]["release_title"], "url" => "http://localhost:8888/php-music/releases?id=" . $results[$i]["release_id"]];
-	}
 
     header("Content-Type: applicaition/json; charset=utf-8");
     echo json_encode($output);
 }
-// if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
-//     $id = validateID();
-
-//     $stmt = $conn->prepare("SELECT * FROM artists WHERE id = :id");
-//     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-//     $stmt->execute();
-
-//     $results = $stmt->fetch(PDO::FETCH_ASSOC);
-
-//     header("Content-Type: applicaition/json; charset=utf-8");
-//     echo json_encode($results);
-// }
 
 
 # CREATE NEW ARTIST
@@ -117,7 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 # EDIT EXISTING ARTIST
 if ($_SERVER["REQUEST_METHOD"] === "PUT") {
-    $id = validateID();
+    $id = validateParam($_GET["id"]);
 
     parse_str(file_get_contents("php://input"), $body);
 

@@ -1,15 +1,15 @@
 <?php
 require("../db.php");
 
-function validateID() {
+function validateParam($param) {
     global $conn;
 
-    if (empty($_GET["id"])) {
+    if (empty($param)) {
 		http_response_code(400);
 		exit;
 	}
 
-	$id = $_GET["id"];
+	$id = $param;
 
 	if (!is_numeric($id)) {
 		header("Content-Type: application/json; charset=utf-8");
@@ -20,7 +20,7 @@ function validateID() {
 
 	$id = intval($id, 10);
 
-	$stmt = $conn->prepare("SELECT * FROM releases WHERE id = :id");
+	$stmt = $conn->prepare("SELECT * FROM songs WHERE id = :id");
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
 	$stmt->execute();
 	$result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -35,7 +35,7 @@ function validateID() {
 
 
 # GET ALL RELEASES
-if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"])) {
+if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"]) && empty($_GET["artist"])) {
     $stmt = $conn->prepare("SELECT * FROM releases");
     $stmt->execute();
 
@@ -56,7 +56,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"])) {
 
 # GET RELEASE FROM ID
 if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
-    $id = validateID();
+    $id = validateParam($_GET["id"]);
 
     $stmt = $conn->prepare(
         "SELECT releases.id, releases.title, releases.release_year, releases.release_type, releases.artwork_url,
@@ -78,6 +78,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
         "release_type" => $results[0]["release_type"],
         "artwork_url" => $results[0]["artwork_url"],
         "artists" => [],
+        "tracklist_url" => "http://localhost:8888/php-music/songs?release=" . $id,
     ];
 
     for ($i = 0; $i < count($results); $i++) {
@@ -87,18 +88,42 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
     header("Content-Type: applicaition/json; charset=utf-8");
     echo json_encode($output);
 }
-// if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
-//     $id = validateID();
 
-//     $stmt = $conn->prepare("SELECT * FROM releases WHERE id = :id");
-//     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-//     $stmt->execute();
 
-//     $results = $stmt->fetch(PDO::FETCH_ASSOC);
+# GET RELEASES FROM ARTIST
+if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["artist"])) {
+    $artist = validateParam($_GET["artist"]);
 
-//     header("Content-Type: applicaition/json; charset=utf-8");
-//     echo json_encode($results);
-// }
+    $stmt = $conn->prepare(
+        "SELECT releases.id, releases.title, releases.release_year, releases.release_type, releases.artwork_url, artists.name
+        FROM release_artists
+        LEFT JOIN releases ON releases.id = release_artists.release_id
+        LEFT JOIN artists ON artists.id = release_artists.artist_id
+        WHERE release_artists.artist_id = :artist
+        ORDER BY releases.release_year ASC"
+    );
+    $stmt->bindParam(":artist", $artist, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $output = [
+        "artist" => $results[0]["name"],
+        "artist_url" => "http://localhost:8888/php-music/artists?id=" . $artist,
+        "results" => [],
+    ];
+
+    for ($i = 0; $i < count($results); $i++) {
+        $output["results"][] = ["title" => $results[$i]["title"], "url" => "http://localhost:8888/php-music/releases?id=" . $results[$i]["id"]];
+        unset($results[$i]["id"]);
+        unset($results[$i]["release_year"]);
+        unset($results[$i]["release_type"]);
+        unset($results[$i]["artwork_url"]);
+    }
+
+    header("Content-Type: applicaition/json; charset=utf-8");
+    echo json_encode($output);
+}
 
 
 # CREATE NEW RELEASE
@@ -144,7 +169,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 # EDIT EXISTING RELEASE
 if ($_SERVER["REQUEST_METHOD"] === "PUT") {
-    $id = validateID();
+    $id = validateParam($_GET["id"]);
 
     parse_str(file_get_contents("php://input"), $body);
 
@@ -205,12 +230,3 @@ if ($_SERVER["REQUEST_METHOD"] === "DELETE") {
     $stmt->execute();
     http_response_code(204);
 }
-
-// "SELECT releases.id, releases.title, releases.release_year, releases.release_type, releases.artwork_url,
-//         songs.id AS song_id, songs.title AS song_title, songs.track_number,
-//         artists.id AS artist_id, artists.name AS artist_name
-//         FROM releases
-//         LEFT JOIN songs ON songs.release_id = :id
-//         LEFT JOIN release_artists ON release_artists.release_id = :id
-//         LEFT JOIN artists ON artists.id = release_artists.artist_id
-//         WHERE releases.id = :id"
