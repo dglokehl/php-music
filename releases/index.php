@@ -33,6 +33,20 @@ function validateParam($param) {
 	return $id;
 }
 
+function checkAuth() {
+    $headers = apache_request_headers();
+
+    if (!isset($headers["X-Authorization"])) {
+        http_response_code(401);
+		exit;
+    }
+
+    if ($headers["X-Authorization"] !== "1234") {
+        http_response_code(403);
+		exit;
+    }
+}
+
 
 # GET ALL RELEASES
 if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"]) && empty($_GET["tracklist"])) {
@@ -149,6 +163,8 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["tracklist"])) {
 
 # CREATE NEW RELEASE
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    checkAuth();
+
     if (empty($_POST["title"])) {
         http_response_code(403);
         echo json_encode("title not included");
@@ -190,6 +206,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 # EDIT EXISTING RELEASE
 if ($_SERVER["REQUEST_METHOD"] === "PUT") {
+    checkAuth();
     $id = validateParam($_GET["id"]);
 
     parse_str(file_get_contents("php://input"), $body);
@@ -239,11 +256,8 @@ if ($_SERVER["REQUEST_METHOD"] === "PUT") {
 
 # DELETE RELEASE
 if ($_SERVER["REQUEST_METHOD"] === "DELETE") {
-    if (empty($_GET["id"])) {
-        http_response_code(400);
-        exit;
-    }
-    $id = $_GET["id"];
+    checkAuth();
+    $id = validateParam($_GET["id"]);
 
     $stmt = $conn->prepare("DELETE FROM releases WHERE id = :id");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
