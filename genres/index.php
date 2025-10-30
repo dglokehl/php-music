@@ -20,7 +20,7 @@ function validateParam($param) {
 
 	$id = intval($id, 10);
 
-	$stmt = $conn->prepare("SELECT * FROM songs WHERE id = :id");
+	$stmt = $conn->prepare("SELECT * FROM genres WHERE id = :id");
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
 	$stmt->execute();
 	$result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -35,18 +35,40 @@ function validateParam($param) {
 
 
 # GET ALL GENRES
-if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"]) && empty($_GET["song"])) {
-    $stmt = $conn->prepare("SELECT * FROM genres");
+if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"]) && empty($_GET["songs"])) {
+    $limit = isset($_GET["limit"]) ? intval($_GET["limit"]) : 10;
+    $offset = isset($_GET["offset"]) ? intval($_GET["offset"]) : 0;
+
+    $stmt = $conn->prepare("SELECT COUNT(id) FROM genres");
+    $stmt->execute();
+    $count = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $stmt = $conn->prepare("SELECT * FROM genres LIMIT :limit OFFSET :offset");
+    $stmt->bindParam(":limit", $limit, PDO::PARAM_INT);
+    $stmt->bindParam(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $prevOffset = max(0, $offset - $limit);
+    $nextOffset = $offset + $limit;
+
+    $prev = "http://localhost:8888/php-music/genres?offset=$prevOffset&limit=$limit";
+    $next = "http://localhost:8888/php-music/genres?offset=$nextOffset&limit=$limit";
+
+    $output = [
+        "count" => $count["COUNT(id)"],
+        "prev" => ($prevOffset <= 0) ? null : $prev,
+        "next" => ($nextOffset < $count["COUNT(id)"]) ? $next : null,
+        "results" => [],
+    ];
+
     for ($i = 0; $i < count($results); $i++) {
-        $results[$i]["url"] = "http://localhost:8888/php-music/genres?id=" . $results[$i]["id"];
+        $output["results"][] = ["name" => $results[$i]["name"], "url" => "http://localhost:8888/php-music/genres?id=" . $results[$i]["id"]];
         unset($results[$i]["id"]);
     }
 
     header("Content-Type: applicaition/json; charset=utf-8");
-    $output = ["results" => $results];
     echo json_encode($output);
 }
 
@@ -64,7 +86,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
     $output = [
         "id" => $results[0]["id"],
         "name" => $results[0]["name"],
-        "songs_url" => "http://localhost:8888/php-music/songs?genre=" . $id,
+        "songs_url" => "http://localhost:8888/php-music/genres?genre=" . $id,
     ];
 
     header("Content-Type: applicaition/json; charset=utf-8");
@@ -72,30 +94,30 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
 }
 
 
-# GET GENRES FROM SONG
-if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["song"])) {
-    $song = validateParam($_GET["song"]);
+# GET SONGS FROM GENRE
+if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["songs"])) {
+    $songs = validateParam($_GET["songs"]);
 
     $stmt = $conn->prepare(
-        "SELECT genres.id, genres.name, songs.title
+        "SELECT songs.id, songs.title, genres.name
         FROM song_genres
-        LEFT JOIN genres ON genres.id = song_genres.genre_id
+        LEFT JOIN genres ON genres.id = :genre
         LEFT JOIN songs ON songs.id = song_genres.song_id
-        WHERE song_genres.song_id = :song"
+        WHERE song_genres.genre_id = :genre"
     );
-    $stmt->bindParam(":song", $song, PDO::PARAM_INT);
+    $stmt->bindParam(":genre", $songs, PDO::PARAM_INT);
     $stmt->execute();
 
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $output = [
-        "song" => $results[0]["title"],
-        "song_url" => "http://localhost:8888/php-music/songs?id=" . $song,
+        "genre" => $results[0]["name"],
+        "genre_url" => "http://localhost:8888/php-music/genres?id=" . $songs,
         "results" => [],
     ];
 
     for ($i = 0; $i < count($results); $i++) {
-        $output["results"][] = ["name" => $results[$i]["name"], "url" => "http://localhost:8888/php-music/genres?id=" . $results[$i]["id"]];
+        $output["results"][] = ["title" => $results[$i]["title"], "url" => "http://localhost:8888/php-music/artists?id=" . $results[$i]["id"]];
         unset($results[$i]["id"]);
         unset($results[$i]["name"]);
     }
