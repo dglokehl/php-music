@@ -82,7 +82,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && empty($_GET["id"]) && empty($_GET["di
         unset($results[$i]["id"]);
     }
 
-    header("Content-Type: applicaition/json; charset=utf-8");
+    header("Content-Type: application/json; charset=utf-8");
     echo json_encode($output);
 }
 
@@ -110,7 +110,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["id"])) {
         "discography_url" => "http://localhost:8888/php-music/artists?discography=" . $id,
     ];
 
-    header("Content-Type: applicaition/json; charset=utf-8");
+    header("Content-Type: application/json; charset=utf-8");
     echo json_encode($output);
 }
 
@@ -146,7 +146,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET" && !empty($_GET["discography"])) {
         unset($results[$i]["artwork_url"]);
     }
 
-    header("Content-Type: applicaition/json; charset=utf-8");
+    header("Content-Type: application/json; charset=utf-8");
     echo json_encode($output);
 }
 
@@ -199,7 +199,7 @@ if ($_SERVER["REQUEST_METHOD"] === "PUT") {
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
-    header("Content-Type: applicaition/json; charset=utf-8");
+    header("Content-Type: application/json; charset=utf-8");
     http_response_code(200);
     echo json_encode($stmt->fetch(PDO::FETCH_ASSOC));
 }
