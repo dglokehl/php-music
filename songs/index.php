@@ -182,8 +182,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $track_number = $_POST["track_number"];
     $release_id = $_POST["release_id"];
 
-    $stmt = $conn->prepare("INSERT INTO songs (`title`, `track_number`, `release_id`)
-                            VALUES (:title, :track_number, :release_id)");
+    $stmt = $conn->prepare(
+        "INSERT INTO songs (`title`, `track_number`, `release_id`)
+        VALUES (:title, :track_number, :release_id)"
+    );
 
     $stmt->bindParam(":title", $title);
     $stmt->bindParam(":track_number", $track_number);
@@ -217,9 +219,11 @@ if ($_SERVER["REQUEST_METHOD"] === "PUT") {
         exit;
     }
 
-    $stmt = $conn->prepare("UPDATE songs 
-                            SET title = :title, track_number = :track_number, release_id = :release_id
-                            WHERE id = :id");
+    $stmt = $conn->prepare(
+        "UPDATE songs 
+        SET title = :title, track_number = :track_number, release_id = :release_id
+        WHERE id = :id"
+    );
 
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":title", $body["title"]);

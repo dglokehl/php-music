@@ -1,0 +1,934 @@
+{
+	"info": {
+		"_postman_id": "3b916b71-3d18-4bf6-8519-4b7bbf8ce711",
+		"name": "PHP music",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49456763",
+		"_collection_link": "https://dglokehl-1158484.postman.co/workspace/f86564b5-cd80-4fb8-879c-442b9f08608d/collection/49456763-3b916b71-3d18-4bf6-8519-4b7bbf8ce711?action=share&source=collection_link&creator=49456763"
+	},
+	"item": [
+		{
+			"name": "/artists",
+			"item": [
+				{
+					"name": "get all artists",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/artists?limit=10&offset=11",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"artists"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "11"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get artist by id",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/artists?id=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"artists"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get releases by artist / Discography",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/artists?discography=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"artists"
+							],
+							"query": [
+								{
+									"key": "discography",
+									"value": "3"
+								}
+							]
+						},
+						"description": "Use \"discography\" param to specify artist's ID"
+					},
+					"response": []
+				},
+				{
+					"name": "create new artist",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8888/php-music/artists",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"artists"
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				},
+				{
+					"name": "edit artist",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8888/php-music/artists?id=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"artists"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				},
+				{
+					"name": "delete artist",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8888/php-music/artists?id=24",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"artists"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "24"
+								}
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "/releases",
+			"item": [
+				{
+					"name": "get all releases",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/releases?offset=11&limit=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"releases"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "11"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get release by id",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/releases?id=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"releases"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get songs by release / Tracklist",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/releases?tracklist=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"releases"
+							],
+							"query": [
+								{
+									"key": "tracklist",
+									"value": "3"
+								}
+							]
+						},
+						"description": "Use \"tracklist\" param to specify release's ID"
+					},
+					"response": []
+				},
+				{
+					"name": "create new release",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "release_year",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "release_type",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "artwork_url",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8888/php-music/releases",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"releases"
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				},
+				{
+					"name": "edit release",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "release_year",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "release_type",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "artwork_url",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8888/php-music/releases?id=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"releases"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				},
+				{
+					"name": "delete releases",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8888/php-music/releases?id=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"releases"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "/songs",
+			"item": [
+				{
+					"name": "get all songs",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/songs?offset=11&limit=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"songs"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "11"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get song by id",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/songs?id=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"songs"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get genres by song",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/songs?genres=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"songs"
+							],
+							"query": [
+								{
+									"key": "genres",
+									"value": "4"
+								}
+							]
+						},
+						"description": "Use \"genres\" param to specify song's ID"
+					},
+					"response": []
+				},
+				{
+					"name": "create new song",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "track_number",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "release_id",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8888/php-music/songs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"songs"
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				},
+				{
+					"name": "edit song",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "track_number",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "release_id",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8888/php-music/songs?id=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"songs"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				},
+				{
+					"name": "delete song",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8888/php-music/songs?id=2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"songs"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "/genres",
+			"item": [
+				{
+					"name": "get all genres",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/genres?offset=11&limit=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"genres"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "11"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get genre by id",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/genres?id=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"genres"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get songs by genre",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8888/php-music/genres?songs=5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"genres"
+							],
+							"query": [
+								{
+									"key": "songs",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Use \"songs\" param to specify genre's ID"
+					},
+					"response": []
+				},
+				{
+					"name": "create new genre",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8888/php-music/genres",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"genres"
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				},
+				{
+					"name": "edit genre",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8888/php-music/genres?id=3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"genres"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				},
+				{
+					"name": "delete genre",
+					"protocolProfileBehavior": {
+						"followOriginalHttpMethod": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Authorization",
+								"value": "1234",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8888/php-music/genres?id=4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8888",
+							"path": [
+								"php-music",
+								"genres"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "4"
+								}
+							]
+						},
+						"description": "Use \"X-Authorization\" header"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

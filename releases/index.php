@@ -191,8 +191,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $release_type = $_POST["release_type"];
     $artwork_url = $_POST["artwork_url"];
 
-    $stmt = $conn->prepare("INSERT INTO releases (`title`, `release_year`, `release_type`, `artwork_url`)
-                            VALUES (:title, :release_year, :release_type, :artwork_url)");
+    $stmt = $conn->prepare(
+        "INSERT INTO releases (`title`, `release_year`, `release_type`, `artwork_url`)
+        VALUES (:title, :release_year, :release_type, :artwork_url)"
+    );
 
     $stmt->bindParam(":title", $title);
     $stmt->bindParam(":release_year", $release_year);
@@ -232,9 +234,11 @@ if ($_SERVER["REQUEST_METHOD"] === "PUT") {
         exit;
     }
 
-    $stmt = $conn->prepare("UPDATE releases 
-                            SET title = :title, release_year = :release_year, release_type = :release_type, artwork_url = :artwork_url
-                            WHERE id = :id");
+    $stmt = $conn->prepare(
+        "UPDATE releases 
+        SET title = :title, release_year = :release_year, release_type = :release_type, artwork_url = :artwork_url
+        WHERE id = :id"
+    );
 
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":title", $body["title"]);

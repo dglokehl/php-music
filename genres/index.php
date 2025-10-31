@@ -153,8 +153,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $name = $_POST["name"];
 
-    $stmt = $conn->prepare("INSERT INTO genres (`name`)
-                            VALUES (:name)");
+    $stmt = $conn->prepare(
+        "INSERT INTO genres (`name`)
+        VALUES (:name)"
+    );
 
     $stmt->bindParam(":name", $name);
 
@@ -177,9 +179,11 @@ if ($_SERVER["REQUEST_METHOD"] === "PUT") {
         exit;
     }
 
-    $stmt = $conn->prepare("UPDATE genres 
-                            SET name = :name
-                            WHERE id = :id");
+    $stmt = $conn->prepare(
+        "UPDATE genres 
+        SET name = :name
+        WHERE id = :id"
+    );
 
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":name", $body["name"]);
